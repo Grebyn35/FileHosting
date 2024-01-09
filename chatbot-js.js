@@ -14,17 +14,17 @@ const textarea = document.querySelector('.chatbox-message-input')
 const chatboxForm = document.querySelector('.chatbox-message-form')
 
 textarea.addEventListener('input', function () {
-	let line = textarea.value.split('\n').length
+    let line = textarea.value.split('\n').length
 
-	if(textarea.rows < 6 || line < 6) {
-            textarea.rows = line
-        }
+    if(textarea.rows < 6 || line < 6) {
+        textarea.rows = line
+    }
 
-        if(textarea.rows > 1) {
-            chatboxForm.style.alignItems = 'flex-end'
-        } else {
-            chatboxForm.style.alignItems = 'center'
-        }
+    if(textarea.rows > 1) {
+        chatboxForm.style.alignItems = 'flex-end'
+    } else {
+        chatboxForm.style.alignItems = 'center'
+    }
 })
 
 
@@ -43,14 +43,14 @@ const chatboxMessageWrapper = document.querySelector('.chatbox-message-content')
 const chatboxNoMessage = document.querySelector('.chatbox-message-no-message')
 
 chatboxForm.addEventListener('submit', function (e) {
-    e.preventDefault()
+    e.preventDefault();
+    const userMessage = textarea.value.trim();
 
-    if(isValid(textarea.value)) {
-        writeMessage()
-        //Här ska funtionen vara för att returnera ett svar
-        setTimeout(autoReply, 1000)
+    if(isValid(userMessage)) {
+        writeMessage();
+        retrieveReply(userMessage); // Pass the user's message to the function
     }
-})
+});
 
 
 
@@ -77,18 +77,42 @@ function writeMessage() {
     scrollBottom()
 }
 
-function autoReply() {
-    const today = new Date()
+function retrieveReply(userMessage) {
+    // Define the API endpoint
+    const apiEndpoint = 'https://localhost:8081/submit-message';
+    // Set the user ID and message as parameters
+    const params = new URLSearchParams({ id: botId, message: userMessage });
+
+    // Make the POST request using fetch
+    fetch(apiEndpoint, {
+        method: 'POST',
+        body: params,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+        .then(response => response.text()) // Assuming the response is plain text
+        .then(reply => {
+            // Handle the reply here, by calling a function to display the bot's message
+            displayBotReply(reply);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+function displayBotReply(botMessage) {
+    const today = new Date();
     let message = `
 		<div class="chatbox-message-item received">
 			<span class="chatbox-message-item-text">
-				Thank you for your awesome support!
+				${botMessage}
 			</span>
 			<span class="chatbox-message-item-time">${addZero(today.getHours())}:${addZero(today.getMinutes())}</span>
 		</div>
-	`
-    chatboxMessageWrapper.insertAdjacentHTML('beforeend', message)
-    scrollBottom()
+	`;
+    chatboxMessageWrapper.insertAdjacentHTML('beforeend', message);
+    scrollBottom();
 }
 
 function scrollBottom() {
