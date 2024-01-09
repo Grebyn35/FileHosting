@@ -3,10 +3,31 @@ function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
-
 // Retrieve the botId from the query parameters
 const botId = getQueryParam('id');
+function setChatbotAttributes(){
+    const apiEndpoint = 'http://localhost:8081/get-chatbot-data';
+    // Set the user ID and message as parameters
+    const params = new URLSearchParams({ id: botId});
 
+    // Make the POST request using fetch
+    fetch(apiEndpoint, {
+        method: 'POST',
+        body: params,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+        .then(response => response.text()) // Assuming the response is plain text
+        .then(reply => {
+            // Handle the reply here, by calling a function to display the bot's message
+            displayBotAttributes(reply)
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+setChatbotAttributes()
 
 
 // MESSAGE INPUT
@@ -79,7 +100,7 @@ function writeMessage() {
 
 function retrieveReply(userMessage) {
     // Define the API endpoint
-    const apiEndpoint = 'https://localhost:8081/submit-message';
+    const apiEndpoint = 'http://localhost:8081/submit-message';
     // Set the user ID and message as parameters
     const params = new URLSearchParams({ id: botId, message: userMessage });
 
@@ -113,6 +134,11 @@ function displayBotReply(botMessage) {
 	`;
     chatboxMessageWrapper.insertAdjacentHTML('beforeend', message);
     scrollBottom();
+}
+function displayBotAttributes(botMessage) {
+    const botAttributes = JSON.parse(botMessage);
+    document.getElementById("displayText").textContent = botAttributes.displayText
+    document.getElementById("botName").textContent = botAttributes.botName
 }
 
 function scrollBottom() {
